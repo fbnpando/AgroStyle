@@ -1,0 +1,136 @@
+.pp-page {
+  min-height: 100vh;
+  background: #f4f6f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Outfit', sans-serif;
+  padding: 2rem;
+}
+
+.pp-card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 2.25rem 2rem;
+  max-width: 440px;
+  width: 100%;
+  box-shadow: 0 0 1px rgba(0, 0, 0, 0.1), 0 4px 16px rgba(0, 0, 0, 0.08);
+  text-align: center;
+}
+
+.pp-icon-wrap {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #fff3cd;
+  color: #856404;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.25rem;
+}
+
+.pp-icon-wrap.rejected {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.pp-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 0.65rem;
+}
+
+.pp-text {
+  font-size: 0.9rem;
+  color: #4b5563;
+  line-height: 1.6;
+  margin-bottom: 0.75rem;
+}
+
+.pp-sub {
+  font-size: 0.82rem;
+  color: #9ca3af;
+  margin-top: 0.5rem;
+}
+
+.pp-reason {
+  background: #f8d7da;
+  color: #721c24;
+  padding: 0.65rem 0.9rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  text-align: left;
+  margin: 0.65rem 0;
+}
+
+.pp-meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  color: #6b7280;
+  background: #f9fafb;
+  border-radius: 6px;
+  padding: 0.6rem 1rem;
+  margin: 1rem 0;
+}
+
+.pp-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin: 1.25rem 0;
+  text-align: left;
+}
+
+.pp-step {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-size: 0.855rem;
+  color: #9ca3af;
+}
+
+.pp-step.done  { color: #374151; font-weight: 600; }
+.pp-step.rejected { color: #dc3545; }
+
+.pp-step-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid #d1d5db;
+  flex-shrink: 0;
+}
+
+.pp-step.done .pp-step-dot     { background: #28a745; border-color: #28a745; }
+.pp-step.rejected .pp-step-dot { background: #dc3545; border-color: #dc3545; }
+
+.pp-step-check {
+  margin-left: auto;
+  color: #28a745;
+  flex-shrink: 0;
+}
+
+.pp-logout {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  border: 1px solid #d1d5db;
+  background: none;
+  color: #6b7280;
+  font-size: 0.855rem;
+  font-weight: 600;
+  font-family: 'Outfit', sans-serif;
+  padding: 0.55rem 1.2rem;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  transition: background 0.15s, color 0.15s;
+}
+.pp-logout:hover {
+  background: #f9fafb;
+  color: #374151;
+}
