@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
-import { collection, addDoc } from 'firebase/firestore';
-import { db } from '../services/firebase';
+import { createFarm, updateFarm } from '../services/farms';
 import { useAuth } from '../context/AuthContext';
 import { X, MapPin } from 'lucide-react';
 import L from 'leaflet';
@@ -26,12 +25,18 @@ function LocationMarker({ position, setPosition }) {
   );
 }
 
-export default function AddFarmModal({ onClose, onFarmAdded }) {
+export default function AddFarmModal({ onClose, onFarmAdded, onFarmUpdated, farm = null }) {
   const { currentUser } = useAuth();
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [zone, setZone] = useState('');
-  const [position, setPosition] = useState({ lat: -17.7833, lng: -63.1821 }); // Santa Cruz default
+  const isEdit = Boolean(farm);
+
+  const [name, setName] = useState(farm?.name || '');
+  const [phone, setPhone] = useState(farm?.phone || '');
+  const [zone, setZone] = useState(farm?.zone || '');
+  const [position, setPosition] = useState(
+    farm?.lat != null && farm?.lng != null
+      ? { lat: farm.lat, lng: farm.lng }
+      : { lat: -17.7833, lng: -63.1821 } // Santa Cruz default
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -44,22 +49,26 @@ export default function AddFarmModal({ onClose, onFarmAdded }) {
 
     try {
       setLoading(true);
-      const newFarm = {
-        name,
-        phone,
-        zone,
-        lat: position.lat,
-        lng: position.lng,
-        producerId: currentUser.uid,
-        updatedAt: new Date().toISOString()
-      };
-      
-      const docRef = await addDoc(collection(db, 'farms'), newFarm);
-      onFarmAdded({ id: docRef.id, ...newFarm });
+      if (isEdit) {
+        const updated = await updateFarm(farm.id, {
+          name, phone, zone, lat: position.lat, lng: position.lng,
+        });
+        onFarmUpdated?.(updated);
+      } else {
+        const newFarm = await createFarm({
+          producerId: currentUser.id,
+          name,
+          phone,
+          zone,
+          lat: position.lat,
+          lng: position.lng,
+        });
+        onFarmAdded?.(newFarm);
+      }
       onClose();
     } catch (err) {
       console.error(err);
-      setError('Error al guardar la finca.');
+      setError('Error al guardar la finca: ' + (err.message || ''));
     } finally {
       setLoading(false);
     }
@@ -81,10 +90,14 @@ export default function AddFarmModal({ onClose, onFarmAdded }) {
         }}>
           <X size={24} color="#6b7280" />
         </button>
-        
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem', color: '#111827' }}>Añadir nueva finca</h2>
-        <p style={{ color: '#6b7280', marginBottom: '2rem' }}>Completa los datos y ubica tu finca en el mapa.</p>
-        
+
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem', color: '#111827' }}>
+          {isEdit ? 'Editar finca' : 'Añadir nueva finca'}
+        </h2>
+        <p style={{ color: '#6b7280', marginBottom: '2rem' }}>
+          {isEdit ? 'Actualiza los datos o reubica el marcador en el mapa.' : 'Completa los datos y ubica tu finca en el mapa.'}
+        </p>
+
         {error && <div className="error-message">{error}</div>}
 
         <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
@@ -93,7 +106,7 @@ export default function AddFarmModal({ onClose, onFarmAdded }) {
               <label className="form-label">Nombre de la finca</label>
               <input type="text" className="form-input" required value={name} onChange={e => setName(e.target.value)} placeholder="Ej. Finca Los Mangales" />
             </div>
-            
+
             <div className="form-group" style={{ marginBottom: 0 }}>
               <label className="form-label">Teléfono de contacto</label>
               <input type="tel" className="form-input" required value={phone} onChange={e => setPhone(e.target.value)} placeholder="Ej. 77123456" />
@@ -105,7 +118,7 @@ export default function AddFarmModal({ onClose, onFarmAdded }) {
             </div>
 
             <button type="submit" disabled={loading} className="btn-primary-auth" style={{ marginTop: 'auto' }}>
-              {loading ? 'Guardando...' : 'Guardar Finca'}
+              {loading ? 'Guardando...' : isEdit ? 'Guardar cambios' : 'Guardar Finca'}
             </button>
           </div>
 
@@ -115,7 +128,7 @@ export default function AddFarmModal({ onClose, onFarmAdded }) {
             </label>
             <p style={{ fontSize: '0.8rem', color: '#6b7280' }}>Haz clic en el mapa para marcar la ubicación exacta.</p>
             <div style={{ height: '300px', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e5e7eb' }}>
-              <MapContainer center={[-17.7833, -63.1821]} zoom={10} style={{ height: '100%', width: '100%' }}>
+              <MapContainer center={[position.lat, position.lng]} zoom={10} style={{ height: '100%', width: '100%' }}>
                 <TileLayer
                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   attribution='&copy; OpenStreetMap contributors'

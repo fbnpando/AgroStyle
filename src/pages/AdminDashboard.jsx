@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { collection, query, where, getDocs, doc, updateDoc } from 'firebase/firestore';
-import { db } from '../services/firebase';
 import { useAuth } from '../context/AuthContext';
 import {
-  LayoutDashboard, Users, FileText, LogOut,
-  Check, X, Clock, ChevronRight, Shield, Menu
-} from 'lucide-react';
+  listProfiles, approveProfile, rejectProfile,
+} from '../services/profiles';
+import {
+  listAllDocuments, listPendingDocuments,
+  approveDocument, rejectDocument,
+} from '../services/documents';
+import { Check, X } from 'lucide-react';
 import './AdminDashboard.css';
 
 const ROLE_LABEL = { producer: 'Productor', transporter: 'Transportista', buyer: 'Comprador' };
@@ -38,8 +40,7 @@ function RejectInline({ onConfirm, onCancel }) {
 
 export default function AdminDashboard() {
   const { currentUser, logout } = useAuth();
-  const [section, setSection]         = useState('dashboard');
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [section, setSection] = useState('dashboard');
 
   const [pendingUsers, setPendingUsers] = useState([]);
   const [allUsers, setAllUsers]         = useState([]);
@@ -55,16 +56,16 @@ export default function AdminDashboard() {
   async function loadAll() {
     setLoading(true);
     try {
-      const [pendingSnap, allUsersSnap, pendingDocsSnap, allDocsSnap] = await Promise.all([
-        getDocs(query(collection(db, 'users'), where('status', '==', 'pending'))),
-        getDocs(query(collection(db, 'users'), where('role', '!=', 'admin'))),
-        getDocs(query(collection(db, 'documents'), where('status', '==', 'pending'))),
-        getDocs(collection(db, 'documents')),
+      const [pending, all, pendingD, allD] = await Promise.all([
+        listProfiles({ status: 'pending' }),
+        listProfiles({ excludeRole: 'admin' }),
+        listPendingDocuments(),
+        listAllDocuments(),
       ]);
-      setPendingUsers(pendingSnap.docs.map(d => ({ id: d.id, ...d.data() })));
-      setAllUsers(allUsersSnap.docs.map(d => ({ id: d.id, ...d.data() })));
-      setPendingDocs(pendingDocsSnap.docs.map(d => ({ id: d.id, ...d.data() })));
-      setAllDocs(allDocsSnap.docs.map(d => ({ id: d.id, ...d.data() })));
+      setPendingUsers(pending);
+      setAllUsers(all);
+      setPendingDocs(pendingD);
+      setAllDocs(allD);
     } catch (err) {
       console.error(err);
     } finally {
@@ -73,44 +74,26 @@ export default function AdminDashboard() {
   }
 
   async function approveUser(userId) {
-    await updateDoc(doc(db, 'users', userId), {
-      status: 'approved',
-      approvedAt: new Date().toISOString(),
-      approvedBy: currentUser.uid,
-    });
+    await approveProfile(userId, currentUser.id);
     setPendingUsers(prev => prev.filter(u => u.id !== userId));
     setAllUsers(prev => prev.map(u => u.id === userId ? { ...u, status: 'approved' } : u));
   }
 
   async function rejectUser(userId, reason) {
-    await updateDoc(doc(db, 'users', userId), {
-      status: 'rejected',
-      rejectedAt: new Date().toISOString(),
-      rejectedBy: currentUser.uid,
-      rejectionReason: reason || 'Sin especificar',
-    });
+    await rejectProfile(userId, currentUser.id, reason);
     setPendingUsers(prev => prev.filter(u => u.id !== userId));
     setAllUsers(prev => prev.map(u => u.id === userId ? { ...u, status: 'rejected' } : u));
     setRejectingUserId(null);
   }
 
   async function approveDoc(docId) {
-    await updateDoc(doc(db, 'documents', docId), {
-      status: 'approved',
-      reviewedAt: new Date().toISOString(),
-      reviewedBy: currentUser.uid,
-    });
+    await approveDocument(docId, currentUser.id);
     setPendingDocs(prev => prev.filter(d => d.id !== docId));
     setAllDocs(prev => prev.map(d => d.id === docId ? { ...d, status: 'approved' } : d));
   }
 
   async function rejectDoc(docId, reason) {
-    await updateDoc(doc(db, 'documents', docId), {
-      status: 'rejected',
-      reviewedAt: new Date().toISOString(),
-      reviewedBy: currentUser.uid,
-      rejectionReason: reason || 'Sin especificar',
-    });
+    await rejectDocument(docId, currentUser.id, reason);
     setPendingDocs(prev => prev.filter(d => d.id !== docId));
     setAllDocs(prev => prev.map(d => d.id === docId ? { ...d, status: 'rejected' } : d));
     setRejectingDocId(null);
@@ -118,202 +101,158 @@ export default function AdminDashboard() {
 
   const approvedCount = allUsers.filter(u => u.status === 'approved').length;
 
-  const sectionTitle = { dashboard: 'Dashboard', users: 'Usuarios', documents: 'Documentos' };
-
   return (
     <div className="aw">
-      {/* Sidebar */}
-      <aside className={`aw-sidebar ${sidebarOpen ? '' : 'collapsed'}`}>
-        <div className="aw-brand">
-          <Shield size={18} />
-          <span>AgroStyle Admin</span>
-        </div>
-
-        <nav className="aw-nav">
-          {[
-            { key: 'dashboard', icon: <LayoutDashboard size={17} />, label: 'Dashboard', badge: 0 },
-            { key: 'users',     icon: <Users size={17} />,           label: 'Usuarios',  badge: pendingUsers.length },
-            { key: 'documents', icon: <FileText size={17} />,        label: 'Documentos',badge: pendingDocs.length },
-          ].map(item => (
-            <button
-              key={item.key}
-              className={`aw-nav-item ${section === item.key ? 'active' : ''}`}
-              onClick={() => setSection(item.key)}
-            >
-              {item.icon}
-              <span>{item.label}</span>
-              {item.badge > 0 && <span className="aw-nav-badge">{item.badge}</span>}
-            </button>
-          ))}
-        </nav>
-
-        <div className="aw-sidebar-footer">
-          <button className="aw-nav-item" onClick={logout}>
-            <LogOut size={17} /><span>Cerrar sesion</span>
+      <nav className="aw-navbar">
+        <span className="aw-brand">AgroStyle Admin</span>
+        <div className="aw-nav-links">
+          <button className={`aw-nav-btn ${section === 'dashboard' ? 'active' : ''}`} onClick={() => setSection('dashboard')}>
+            Dashboard
+          </button>
+          <button className={`aw-nav-btn ${section === 'users' ? 'active' : ''}`} onClick={() => setSection('users')}>
+            Usuarios {pendingUsers.length > 0 && <span className="aw-nav-badge">{pendingUsers.length}</span>}
+          </button>
+          <button className={`aw-nav-btn ${section === 'documents' ? 'active' : ''}`} onClick={() => setSection('documents')}>
+            Documentos {pendingDocs.length > 0 && <span className="aw-nav-badge">{pendingDocs.length}</span>}
           </button>
         </div>
-      </aside>
+        <button className="aw-logout-btn" onClick={logout}>Cerrar sesion</button>
+      </nav>
 
-      {/* Right panel */}
-      <div className="aw-right">
-        {/* Topbar */}
-        <header className="aw-topbar">
-          <button className="aw-toggle" onClick={() => setSidebarOpen(o => !o)}>
-            <Menu size={20} />
-          </button>
-          <div className="aw-breadcrumb">
-            <span>Admin</span>
-            <ChevronRight size={13} />
-            <span className="bc-current">{sectionTitle[section]}</span>
-          </div>
-          <div className="aw-topbar-user">
-            <div className="aw-avatar">A</div>
-            <span>Administrador</span>
-          </div>
-        </header>
+      <main className="aw-content">
 
-        {/* Content */}
-        <main className="aw-content">
+        {/* ── DASHBOARD ── */}
+        {section === 'dashboard' && (
+          <>
+            <div className="aw-page-header">
+              <h1>Dashboard</h1>
+              <p>Resumen del sistema</p>
+            </div>
 
-          {/* ── DASHBOARD ── */}
-          {section === 'dashboard' && (
-            <>
-              <div className="aw-page-header">
-                <h1>Dashboard</h1>
-                <p>Resumen del sistema</p>
+            <div className="aw-info-row">
+              <div className="info-box ib-yellow">
+                <div><div className="ib-num">{pendingUsers.length}</div><div className="ib-label">Usuarios pendientes</div></div>
               </div>
-
-              <div className="aw-info-row">
-                <div className="info-box ib-yellow">
-                  <Clock size={26} className="ib-icon" />
-                  <div><div className="ib-num">{pendingUsers.length}</div><div className="ib-label">Usuarios pendientes</div></div>
-                </div>
-                <div className="info-box ib-green">
-                  <Check size={26} className="ib-icon" />
-                  <div><div className="ib-num">{approvedCount}</div><div className="ib-label">Usuarios aprobados</div></div>
-                </div>
-                <div className="info-box ib-blue">
-                  <FileText size={26} className="ib-icon" />
-                  <div><div className="ib-num">{pendingDocs.length}</div><div className="ib-label">Documentos pendientes</div></div>
-                </div>
-                <div className="info-box ib-teal">
-                  <Users size={26} className="ib-icon" />
-                  <div><div className="ib-num">{allUsers.length}</div><div className="ib-label">Total usuarios</div></div>
-                </div>
+              <div className="info-box ib-green">
+                <div><div className="ib-num">{approvedCount}</div><div className="ib-label">Usuarios aprobados</div></div>
               </div>
-
-              {pendingUsers.length > 0 && (
-                <Card title="Solicitudes de acceso pendientes" action={{ label: 'Ver todos', onClick: () => setSection('users') }}>
-                  <UsersTable
-                    users={pendingUsers.slice(0, 5)}
-                    showActions
-                    rejectingId={rejectingUserId}
-                    onApprove={approveUser}
-                    onRejectClick={setRejectingUserId}
-                    onRejectConfirm={rejectUser}
-                    onRejectCancel={() => setRejectingUserId(null)}
-                  />
-                </Card>
-              )}
-
-              {pendingDocs.length > 0 && (
-                <Card title="Documentos pendientes de revision" action={{ label: 'Ver todos', onClick: () => setSection('documents') }}>
-                  <DocsTable
-                    docs={pendingDocs.slice(0, 5)}
-                    showActions
-                    rejectingId={rejectingDocId}
-                    onApprove={approveDoc}
-                    onRejectClick={setRejectingDocId}
-                    onRejectConfirm={rejectDoc}
-                    onRejectCancel={() => setRejectingDocId(null)}
-                  />
-                </Card>
-              )}
-
-              {pendingUsers.length === 0 && pendingDocs.length === 0 && !loading && (
-                <Card title="">
-                  <p className="empty-msg">No hay solicitudes pendientes.</p>
-                </Card>
-              )}
-            </>
-          )}
-
-          {/* ── USUARIOS ── */}
-          {section === 'users' && (
-            <>
-              <div className="aw-page-header">
-                <h1>Gestion de usuarios</h1>
-                <p>Aprueba o rechaza solicitudes de productores y transportistas</p>
+              <div className="info-box ib-blue">
+                <div><div className="ib-num">{pendingDocs.length}</div><div className="ib-label">Documentos pendientes</div></div>
               </div>
+              <div className="info-box ib-teal">
+                <div><div className="ib-num">{allUsers.length}</div><div className="ib-label">Total usuarios</div></div>
+              </div>
+            </div>
 
-              {pendingUsers.length > 0 && (
-                <Card title="Solicitudes pendientes" badge={pendingUsers.length} badgeClass="badge-warning">
-                  <UsersTable
-                    users={pendingUsers}
-                    showStatus
-                    showActions
-                    rejectingId={rejectingUserId}
-                    onApprove={approveUser}
-                    onRejectClick={setRejectingUserId}
-                    onRejectConfirm={rejectUser}
-                    onRejectCancel={() => setRejectingUserId(null)}
-                  />
-                </Card>
-              )}
-
-              <Card title="Todos los usuarios">
-                {loading ? (
-                  <p className="loading-msg">Cargando...</p>
-                ) : allUsers.length === 0 ? (
-                  <p className="empty-msg">No hay usuarios registrados.</p>
-                ) : (
-                  <UsersTable users={allUsers} showStatus />
-                )}
+            {pendingUsers.length > 0 && (
+              <Card title="Solicitudes de acceso pendientes" action={{ label: 'Ver todos', onClick: () => setSection('users') }}>
+                <UsersTable
+                  users={pendingUsers.slice(0, 5)}
+                  showActions
+                  rejectingId={rejectingUserId}
+                  onApprove={approveUser}
+                  onRejectClick={setRejectingUserId}
+                  onRejectConfirm={rejectUser}
+                  onRejectCancel={() => setRejectingUserId(null)}
+                />
               </Card>
-            </>
-          )}
+            )}
 
-          {/* ── DOCUMENTOS ── */}
-          {section === 'documents' && (
-            <>
-              <div className="aw-page-header">
-                <h1>Validacion de documentos</h1>
-                <p>Revisa y aprueba los archivos enviados por los productores</p>
-              </div>
-
-              {pendingDocs.length > 0 && (
-                <Card title="Pendientes de revision" badge={pendingDocs.length} badgeClass="badge-warning">
-                  <DocsTable
-                    docs={pendingDocs}
-                    showActions
-                    rejectingId={rejectingDocId}
-                    onApprove={approveDoc}
-                    onRejectClick={setRejectingDocId}
-                    onRejectConfirm={rejectDoc}
-                    onRejectCancel={() => setRejectingDocId(null)}
-                  />
-                </Card>
-              )}
-
-              <Card title="Historial de documentos">
-                {loading ? (
-                  <p className="loading-msg">Cargando...</p>
-                ) : allDocs.length === 0 ? (
-                  <p className="empty-msg">Aun no se han enviado documentos.</p>
-                ) : (
-                  <DocsTable docs={allDocs} showStatus />
-                )}
+            {pendingDocs.length > 0 && (
+              <Card title="Documentos pendientes de revision" action={{ label: 'Ver todos', onClick: () => setSection('documents') }}>
+                <DocsTable
+                  docs={pendingDocs.slice(0, 5)}
+                  showActions
+                  rejectingId={rejectingDocId}
+                  onApprove={approveDoc}
+                  onRejectClick={setRejectingDocId}
+                  onRejectConfirm={rejectDoc}
+                  onRejectCancel={() => setRejectingDocId(null)}
+                />
               </Card>
-            </>
-          )}
+            )}
 
-        </main>
-      </div>
+            {pendingUsers.length === 0 && pendingDocs.length === 0 && !loading && (
+              <Card title="">
+                <p className="empty-msg">No hay solicitudes pendientes.</p>
+              </Card>
+            )}
+          </>
+        )}
+
+        {/* ── USUARIOS ── */}
+        {section === 'users' && (
+          <>
+            <div className="aw-page-header">
+              <h1>Gestion de usuarios</h1>
+              <p>Aprueba o rechaza solicitudes de productores y transportistas</p>
+            </div>
+
+            {pendingUsers.length > 0 && (
+              <Card title="Solicitudes pendientes" badge={pendingUsers.length} badgeClass="badge-warning">
+                <UsersTable
+                  users={pendingUsers}
+                  showStatus
+                  showActions
+                  rejectingId={rejectingUserId}
+                  onApprove={approveUser}
+                  onRejectClick={setRejectingUserId}
+                  onRejectConfirm={rejectUser}
+                  onRejectCancel={() => setRejectingUserId(null)}
+                />
+              </Card>
+            )}
+
+            <Card title="Todos los usuarios">
+              {loading ? (
+                <p className="loading-msg">Cargando...</p>
+              ) : allUsers.length === 0 ? (
+                <p className="empty-msg">No hay usuarios registrados.</p>
+              ) : (
+                <UsersTable users={allUsers} showStatus />
+              )}
+            </Card>
+          </>
+        )}
+
+        {/* ── DOCUMENTOS ── */}
+        {section === 'documents' && (
+          <>
+            <div className="aw-page-header">
+              <h1>Validacion de documentos</h1>
+              <p>Revisa y aprueba los archivos enviados por los productores</p>
+            </div>
+
+            {pendingDocs.length > 0 && (
+              <Card title="Pendientes de revision" badge={pendingDocs.length} badgeClass="badge-warning">
+                <DocsTable
+                  docs={pendingDocs}
+                  showActions
+                  rejectingId={rejectingDocId}
+                  onApprove={approveDoc}
+                  onRejectClick={setRejectingDocId}
+                  onRejectConfirm={rejectDoc}
+                  onRejectCancel={() => setRejectingDocId(null)}
+                />
+              </Card>
+            )}
+
+            <Card title="Historial de documentos">
+              {loading ? (
+                <p className="loading-msg">Cargando...</p>
+              ) : allDocs.length === 0 ? (
+                <p className="empty-msg">Aun no se han enviado documentos.</p>
+              ) : (
+                <DocsTable docs={allDocs} showStatus />
+              )}
+            </Card>
+          </>
+        )}
+
+      </main>
     </div>
   );
 }
-
-/* ── Sub-components ── */
 
 function Card({ title, children, action, badge, badgeClass }) {
   return (

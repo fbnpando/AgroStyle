@@ -16,6 +16,9 @@
   box-sizing: border-box;
 }
 
+.mk-spin { animation: mk-spin 0.9s linear infinite; }
+@keyframes mk-spin { to { transform: rotate(360deg); } }
+
 body {
   font-family: 'Outfit', sans-serif;
   background-color: var(--bg-color);

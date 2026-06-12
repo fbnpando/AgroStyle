@@ -1,0 +1,275 @@
+.pf-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(4px);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  font-family: 'Outfit', sans-serif;
+}
+
+.pf-modal {
+  background: #fff;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 720px;
+  max-height: 92vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.pf-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 1.75rem 2rem 1rem;
+  gap: 1rem;
+}
+
+.pf-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: #ecfdf5;
+  color: #059669;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  margin-bottom: 0.5rem;
+}
+
+.pf-header h2 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 0.25rem;
+}
+
+.pf-header p {
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.pf-close {
+  background: #f3f4f6;
+  border: none;
+  color: #6b7280;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+.pf-close:hover { background: #e5e7eb; color: #111827; }
+
+.pf-body {
+  padding: 0 2rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.pf-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #f3f4f6;
+}
+
+.pf-section:first-of-type { border-top: none; padding-top: 0; }
+
+.pf-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.4rem;
+}
+
+.pf-field { display: flex; flex-direction: column; }
+
+.pf-input {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 0.92rem;
+  color: #111827;
+  background: #fff;
+  transition: border 0.15s, box-shadow 0.15s;
+}
+.pf-input:focus {
+  outline: none;
+  border-color: #1e5a36;
+  box-shadow: 0 0 0 3px rgba(30, 90, 54, 0.1);
+}
+.pf-input.has-error {
+  border-color: #ef4444;
+  background: #fff5f5;
+}
+.pf-textarea { resize: vertical; min-height: 84px; }
+
+.pf-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.pf-grid-3 { display: grid; grid-template-columns: 1fr 1.2fr 1fr; gap: 1rem; }
+
+.pf-error { color: #dc2626; font-size: 0.78rem; margin-top: 0.3rem; }
+
+.pf-hint { font-size: 0.78rem; color: #6b7280; margin-top: 0.4rem; }
+
+.pf-image-block { display: flex; flex-direction: column; }
+
+.pf-dropzone {
+  border: 2px dashed #e5e7eb;
+  border-radius: 14px;
+  background: #f9fafb;
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  overflow: hidden;
+  position: relative;
+  transition: border 0.15s, background 0.15s;
+}
+.pf-dropzone:hover {
+  border-color: #1e5a36;
+  background: #f0fdf4;
+}
+.pf-dropzone.has-image {
+  background: #000;
+  border-style: solid;
+  border-color: transparent;
+}
+.pf-dropzone.has-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.pf-dropzone.has-error { border-color: #ef4444; background: #fff5f5; }
+
+.pf-dropzone-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  color: #6b7280;
+}
+.pf-dropzone-empty span { font-size: 0.9rem; font-weight: 600; color: #374151; }
+.pf-dropzone-empty small { font-size: 0.78rem; color: #9ca3af; }
+
+.pf-suggested {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: #eff6ff;
+  color: #1e40af;
+  font-size: 0.85rem;
+  padding: 0.7rem 0.9rem;
+  border-radius: 12px;
+  border: 1px solid #dbeafe;
+}
+.pf-suggested strong { color: #1e3a8a; margin-right: 0.25rem; }
+.pf-pill {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+.pill-warn { background: #fef3c7; color: #92400e; }
+.pill-good { background: #dcfce7; color: #166534; }
+.pill-neutral { background: #e5e7eb; color: #374151; }
+
+.pf-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+.pf-toggle-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  padding: 0.85rem 1rem;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  transition: all 0.15s;
+}
+.pf-toggle-btn strong { color: #111827; font-size: 0.92rem; }
+.pf-toggle-btn span { color: #6b7280; font-size: 0.78rem; }
+.pf-toggle-btn:hover { border-color: #d1d5db; }
+.pf-toggle-btn.active {
+  border-color: #1e5a36;
+  background: #f0fdf4;
+  box-shadow: 0 0 0 3px rgba(30, 90, 54, 0.08);
+}
+.pf-toggle-btn.active strong { color: #166534; }
+
+.pf-banner-error {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #fee2e2;
+  color: #991b1b;
+  border-radius: 10px;
+  padding: 0.7rem 0.9rem;
+  font-size: 0.85rem;
+}
+
+.pf-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #f3f4f6;
+}
+.pf-btn-ghost {
+  background: #fff;
+  color: #4b5563;
+  border: 1px solid #e5e7eb;
+  padding: 0.65rem 1.2rem;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  font-family: inherit;
+}
+.pf-btn-ghost:hover { background: #f9fafb; }
+.pf-btn-primary {
+  background: #1e5a36;
+  color: white;
+  border: none;
+  padding: 0.65rem 1.5rem;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s, transform 0.1s;
+}
+.pf-btn-primary:hover:not(:disabled) { background: #164228; }
+.pf-btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+@media (max-width: 640px) {
+  .pf-grid-2, .pf-grid-3, .pf-toggle { grid-template-columns: 1fr; }
+  .pf-header { padding: 1.25rem 1.25rem 0.5rem; }
+  .pf-body { padding: 0 1.25rem 1.25rem; }
+}

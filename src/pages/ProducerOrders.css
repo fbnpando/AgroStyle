@@ -1,0 +1,117 @@
+.po-layout { min-height: 100vh; background: #f9fafb; font-family: 'Outfit', sans-serif; }
+
+.po-navbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.75rem 1.5rem; background: #fff; border-bottom: 1px solid #e5e7eb;
+  position: sticky; top: 0; z-index: 100;
+}
+.po-logo { display: flex; align-items: center; gap: 0.5rem; font-weight: 800;
+  font-size: 1.1rem; color: #1e5a36; }
+.po-back {
+  display: flex; align-items: center; gap: 0.4rem; background: none;
+  border: 1px solid #e5e7eb; padding: 0.4rem 0.85rem; border-radius: 8px;
+  font-size: 0.82rem; font-weight: 600; cursor: pointer; color: #374151; font-family: inherit;
+}
+.po-back:hover { background: #f3f4f6; }
+
+.po-main { max-width: 860px; margin: 0 auto; padding: 2rem 1.25rem; }
+.po-title { font-size: 1.5rem; font-weight: 800; color: #111827; margin-bottom: 0.4rem; }
+.po-subtitle { font-size: 0.88rem; color: #6b7280; margin-bottom: 1.75rem; }
+
+.po-tabs {
+  display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap;
+}
+.po-tab {
+  padding: 0.45rem 1rem; border-radius: 20px; border: 1px solid #e5e7eb;
+  background: #fff; font-size: 0.82rem; font-weight: 600; cursor: pointer;
+  color: #6b7280; font-family: inherit; display: flex; align-items: center; gap: 0.35rem;
+  transition: all 0.15s;
+}
+.po-tab:hover { background: #f3f4f6; }
+.po-tab.active { background: #1e5a36; color: #fff; border-color: #1e5a36; }
+.po-tab-badge {
+  background: rgba(255,255,255,0.25); border-radius: 10px;
+  padding: 0 5px; font-size: 0.72rem; font-weight: 700;
+}
+.po-tab:not(.active) .po-tab-badge { background: #e5e7eb; color: #374151; }
+
+.po-empty {
+  text-align: center; padding: 3rem 1rem; color: #9ca3af;
+}
+.po-empty h4 { font-size: 1rem; color: #374151; margin: 0.5rem 0 0.3rem; }
+
+.po-order-card {
+  background: #fff; border-radius: 14px; border: 1px solid #e5e7eb;
+  margin-bottom: 1rem; overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.po-order-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.9rem 1.2rem; border-bottom: 1px solid #f3f4f6;
+  gap: 1rem;
+}
+.po-order-id { font-size: 0.78rem; color: #9ca3af; font-weight: 600; }
+.po-order-buyer { font-size: 0.9rem; font-weight: 700; color: #111827; }
+.po-order-date { font-size: 0.78rem; color: #9ca3af; }
+
+.po-badge {
+  font-size: 0.75rem; font-weight: 700; padding: 3px 9px; border-radius: 20px;
+  white-space: nowrap;
+}
+.po-badge.warning  { background: #fef3c7; color: #92400e; }
+.po-badge.info     { background: #dbeafe; color: #1d4ed8; }
+.po-badge.success  { background: #dcfce7; color: #15803d; }
+.po-badge.danger   { background: #fee2e2; color: #b91c1c; }
+
+.po-order-items { padding: 0.75rem 1.2rem; border-bottom: 1px solid #f3f4f6; }
+.po-item-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0.3rem 0; font-size: 0.85rem; color: #374151;
+}
+.po-item-row span:last-child { font-weight: 700; color: #111827; }
+
+.po-order-foot {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.8rem 1.2rem; flex-wrap: wrap; gap: 0.75rem;
+}
+.po-total { font-size: 1rem; font-weight: 800; color: #1e5a36; }
+.po-total small { font-size: 0.78rem; font-weight: 500; color: #6b7280; margin-right: 4px; }
+.po-actions { display: flex; gap: 0.5rem; }
+
+.po-btn-confirm {
+  padding: 0.5rem 1.1rem; background: #1e5a36; color: #fff;
+  border: none; border-radius: 8px; font-size: 0.85rem; font-weight: 700;
+  cursor: pointer; font-family: inherit; display: flex; align-items: center; gap: 0.35rem;
+}
+.po-btn-confirm:hover { background: #15472b; }
+.po-btn-confirm:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.po-btn-reject {
+  padding: 0.5rem 1.1rem; background: none; color: #dc2626;
+  border: 1px solid #fca5a5; border-radius: 8px; font-size: 0.85rem; font-weight: 700;
+  cursor: pointer; font-family: inherit; display: flex; align-items: center; gap: 0.35rem;
+}
+.po-btn-reject:hover { background: #fef2f2; }
+
+.po-rejection-form {
+  padding: 0.85rem 1.2rem; background: #fef2f2; border-top: 1px solid #fca5a5;
+}
+.po-rejection-form textarea {
+  width: 100%; padding: 0.6rem 0.85rem; border: 1px solid #fca5a5; border-radius: 8px;
+  font-size: 0.85rem; font-family: inherit; resize: vertical; min-height: 70px;
+  box-sizing: border-box;
+}
+.po-rejection-form-btns { display: flex; gap: 0.5rem; margin-top: 0.6rem; }
+.po-btn-sm-danger {
+  padding: 0.45rem 1rem; background: #dc2626; color: #fff; border: none;
+  border-radius: 7px; font-size: 0.82rem; font-weight: 700; cursor: pointer; font-family: inherit;
+}
+.po-btn-sm-cancel {
+  padding: 0.45rem 1rem; background: none; border: 1px solid #e5e7eb; color: #6b7280;
+  border-radius: 7px; font-size: 0.82rem; font-weight: 600; cursor: pointer; font-family: inherit;
+}
+
+.po-notes-row { padding: 0.5rem 1.2rem; font-size: 0.8rem; color: #6b7280;
+  border-bottom: 1px solid #f3f4f6; }
+.po-rejection-reason { padding: 0.5rem 1.2rem; font-size: 0.8rem; color: #b91c1c;
+  background: #fef2f2; border-top: 1px solid #fca5a5; }
